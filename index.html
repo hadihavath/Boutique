@@ -18,14 +18,20 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         .tab-active { border-bottom: 2px solid #8b5cf6; color: #8b5cf6; }
-        .status-pending { background-color: #fef3c7; color: #92400e; }
-        .status-processing { background-color: #dbeafe; color: #1e40af; }
-        .status-completed { background-color: #d1fae5; color: #065f46; }
-        .status-delivered { background-color: #f3f4f6; color: #374151; }
+        
+        /* Status Colors */
+        .status-pending { background-color: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+        .status-processing { background-color: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+        .status-completed { background-color: #ecfdf5; color: #047857; border: 1px solid #d1fae5; }
+        .status-delivered { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+        
+        /* Deadline Alerts */
+        .alert-urgent { background-color: #fef2f2; border-left: 4px solid #ef4444; }
+        .alert-soon { background-color: #fffbeb; border-left: 4px solid #f59e0b; }
+
         .login-overlay { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(5px); }
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Custom Scrollbar for Modal */
         .modal-scroll::-webkit-scrollbar { width: 8px; }
         .modal-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .modal-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
@@ -94,8 +100,17 @@
                     <p id="stat-margin" class="text-3xl font-bold text-blue-600">0%</p>
                 </div>
             </div>
+
+            <div id="urgent-container" class="hidden">
+                <h3 class="text-lg font-bold text-red-600 mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                    Upcoming Deliveries (Next 3 Days)
+                </h3>
+                <div id="urgent-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"></div>
+            </div>
+
             <div class="card p-6">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Quick Status Update</h3>
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Recent Activity</h3>
                 <div id="quick-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </div>
         </div>
@@ -111,7 +126,7 @@
                         <option value="Completed">Completed</option>
                         <option value="Delivered">Delivered</option>
                     </select>
-                    <input type="text" id="searchOrders" placeholder="Search name or item..." class="border rounded-md px-3 py-2 text-sm flex-grow md:w-64 outline-none focus:ring-2 focus:ring-violet-500" onkeyup="renderOrders()">
+                    <input type="text" id="searchOrders" placeholder="Search name, item, ID..." class="border rounded-md px-3 py-2 text-sm flex-grow md:w-64 outline-none focus:ring-2 focus:ring-violet-500" onkeyup="renderOrders()">
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -120,7 +135,7 @@
                         <tr>
                             <th class="px-6 py-4">Customer & Order ID</th>
                             <th class="px-6 py-4">Item & Status</th>
-                            <th class="px-6 py-4">Dates</th>
+                            <th class="px-6 py-4">Deadlines</th>
                             <th class="px-6 py-4 text-right">Profit Analysis</th>
                             <th class="px-6 py-4 text-center">Actions</th>
                         </tr>
@@ -162,7 +177,6 @@
             
             <div class="p-8 space-y-8">
                 <input type="hidden" id="editId">
-                <input type="hidden" id="orderTimestamp">
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
@@ -189,6 +203,18 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Delivery Address</label>
                         <textarea id="custAddress" rows="2" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-violet-500 outline-none transition bg-slate-50" placeholder="Full address..."></textarea>
                     </div>
+                    
+                    <div class="md:col-span-3 border-2 border-dashed border-slate-200 rounded-xl p-4 text-center">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Design/Reference Image</label>
+                        <input type="file" id="designImageInput" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+                        <div id="imagePreviewArea" class="flex flex-col items-center cursor-pointer" onclick="document.getElementById('designImageInput').click()">
+                            <svg id="uploadIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span id="uploadText" class="text-sm text-violet-600 font-medium">Click to upload Design/Fabric photo</span>
+                            <img id="designPreview" class="hidden max-h-40 rounded-lg shadow-sm mt-2">
+                            <input type="hidden" id="designImageBase64">
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Item Category *</label>
                         <input type="text" id="itemType" placeholder="e.g., Silk Saree" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-violet-500 outline-none transition bg-slate-50">
@@ -309,14 +335,14 @@
                 db.ref('users/' + user.uid + '/orders').on('value', snap => {
                     const data = snap.val();
                     orders = data ? Object.values(data) : [];
-                    renderOrders(); renderDashboard(); updateStats();
+                    renderOrders(); renderDashboard(); updateStats(); checkDeadlines();
                 });
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
             }
         });
 
-        // --- 3. AUTO CALCULATION ---
+        // --- 3. LOGIC ---
         function calcFabric() {
             const price = parseFloat(document.getElementById('fabricPricePerM').value) || 0;
             const meter = parseFloat(document.getElementById('fabricMeters').value) || 0;
@@ -341,7 +367,35 @@
             document.getElementById('displayProfit').className = profit >= 0 ? "text-lg font-bold text-emerald-600" : "text-lg font-bold text-red-600";
         }
 
-        // --- 4. DATA HANDLING ---
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Basic compression logic via Canvas
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxWidth = 500; // Limit width to 500px
+                        const scaleSize = maxWidth / img.width;
+                        canvas.width = maxWidth;
+                        canvas.height = img.height * scaleSize;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+                        
+                        document.getElementById('designPreview').src = compressedBase64;
+                        document.getElementById('designPreview').classList.remove('hidden');
+                        document.getElementById('uploadText').innerText = "Image Selected";
+                        document.getElementById('uploadIcon').classList.add('hidden');
+                        document.getElementById('designImageBase64').value = compressedBase64;
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
         function handleSave() {
             if(!currentUser) return alert("Login required.");
             const cust = document.getElementById('custName').value;
@@ -354,7 +408,6 @@
             btn.innerText = "Saving...";
             btn.disabled = true;
 
-            // Costs
             const fabric = parseFloat(document.getElementById('costFabric').value) || 0;
             const dye = parseFloat(document.getElementById('costDye').value) || 0;
             const labor = parseFloat(document.getElementById('costLabor').value) || 0;
@@ -374,13 +427,14 @@
             const orderData = {
                 id: id,
                 orderId: orderIdStr,
-                date: new Date().toLocaleDateString(), // Record created
+                date: new Date().toLocaleDateString(),
                 orderDate: document.getElementById('dateOrder').value,
                 deliveryDate: document.getElementById('dateDelivery').value,
                 customer: cust,
                 phone: document.getElementById('custPhone').value,
                 address: document.getElementById('custAddress').value,
                 item: item,
+                image: document.getElementById('designImageBase64').value, // Save the image string
                 status: document.getElementById('orderStatus').value,
                 measurements: {
                     len: document.getElementById('mLength').value,
@@ -408,15 +462,52 @@
 
         function deleteOrder(id) { if(confirm('Delete record?')) db.ref('users/' + currentUser.uid + '/orders/' + id).remove(); }
 
-        // --- 5. RENDER & MODAL ---
+        // --- 5. RENDER & ALERTS ---
+        function checkDeadlines() {
+            const container = document.getElementById('urgent-orders');
+            const alertBox = document.getElementById('urgent-container');
+            container.innerHTML = '';
+            
+            const today = new Date();
+            const urgent = orders.filter(o => {
+                if(o.status === 'Completed' || o.status === 'Delivered' || !o.deliveryDate) return false;
+                const due = new Date(o.deliveryDate);
+                const diffTime = due - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                return diffDays <= 3; // Due within 3 days or overdue
+            });
+
+            if(urgent.length > 0) {
+                alertBox.classList.remove('hidden');
+                urgent.forEach(o => {
+                    const due = new Date(o.deliveryDate);
+                    const isOverdue = due < today;
+                    const alertClass = isOverdue ? 'alert-urgent' : 'alert-soon';
+                    container.innerHTML += `
+                        <div class="p-4 rounded-lg shadow-sm ${alertClass} flex justify-between items-center cursor-pointer" onclick="openOrderModal(${o.id})">
+                            <div>
+                                <p class="font-bold text-sm text-slate-800">${o.customer}</p>
+                                <p class="text-xs text-red-600 font-bold">${isOverdue ? 'OVERDUE' : 'Due: ' + o.deliveryDate}</p>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-1 bg-white rounded border border-slate-200">${o.status}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                alertBox.classList.add('hidden');
+            }
+        }
+
         function openOrderModal(editId=null) {
-            // Clear all fields
             document.querySelectorAll('#orderModal input, #orderModal textarea').forEach(i=>i.value='');
+            document.getElementById('designPreview').classList.add('hidden');
+            document.getElementById('uploadIcon').classList.remove('hidden');
+            document.getElementById('uploadText').innerText = "Click to upload Design/Fabric photo";
+            document.getElementById('designImageBase64').value = "";
             document.getElementById('orderStatus').value='Pending';
             document.getElementById('editId').value=editId||'';
             document.getElementById('modalTitle').innerText=editId?'Edit Order':'New Order';
             
-            // Set Dates to Today by default
             if(!editId) {
                 document.getElementById('dateOrder').valueAsDate = new Date();
                 document.getElementById('orderIdDisplay').innerText = `ID: ORD-${Date.now().toString().slice(-6)}`;
@@ -433,11 +524,9 @@
                     document.getElementById('orderStatus').value=o.status;
                     document.getElementById('dateOrder').value=o.orderDate||'';
                     document.getElementById('dateDelivery').value=o.deliveryDate||'';
-                    
                     document.getElementById('salePrice').value=o.salePrice;
                     document.getElementById('advance').value=o.advance||0;
                     
-                    // Costs
                     const c = o.costs || {};
                     document.getElementById('costFabric').value=c.fabric||0;
                     document.getElementById('costDye').value=c.dye||0;
@@ -446,13 +535,18 @@
                     document.getElementById('costPacking').value=c.pack||0;
                     document.getElementById('costDelivery').value=c.delivery||0;
                     
-                    // Fabric Details
                     const f = o.fabricDetails || {};
                     document.getElementById('fabricType').value=f.type||'';
                     document.getElementById('fabricPricePerM').value=f.price||'';
                     document.getElementById('fabricMeters').value=f.meters||'';
 
-                    // Measurements
+                    if(o.image) {
+                        document.getElementById('designPreview').src = o.image;
+                        document.getElementById('designPreview').classList.remove('hidden');
+                        document.getElementById('uploadIcon').classList.add('hidden');
+                        document.getElementById('designImageBase64').value = o.image;
+                    }
+
                     if(o.measurements) {
                         const m=o.measurements;
                         document.getElementById('mLength').value=m.len||'';
@@ -489,6 +583,15 @@
             filtered.forEach(o => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 border-b border-slate-50 transition";
+                
+                // Highlight row if date is overdue
+                const today = new Date();
+                let dateStyle = "text-slate-500";
+                if(o.deliveryDate) {
+                    const due = new Date(o.deliveryDate);
+                    if(due < today && o.status !== 'Delivered') dateStyle = "text-red-600 font-bold";
+                }
+
                 tr.innerHTML = `
                     <td class="px-6 py-4">
                         <div class="font-bold text-slate-800">${safe(o.customer)}</div>
@@ -498,7 +601,7 @@
                         <div class="font-semibold text-slate-700 text-sm">${safe(o.item)}</div>
                         <span class="text-[10px] font-bold px-2 py-1 rounded ${getStatusClass(o.status)}">${safe(o.status)}</span>
                     </td>
-                    <td class="px-6 py-4 text-xs text-slate-500">
+                    <td class="px-6 py-4 text-xs ${dateStyle}">
                         <div class="flex flex-col gap-1">
                             <span>📅 Ord: ${o.orderDate || '-'}</span>
                             <span>🚚 Del: ${o.deliveryDate || '-'}</span>
@@ -520,7 +623,7 @@
         }
 
         // --- 6. UTILS ---
-        function switchTab(t){ ['dashboard','orders','analytics'].forEach(s=>{ document.getElementById('section-'+s).classList.add('hidden'); document.getElementById('tab-'+s).classList.remove('tab-active'); }); document.getElementById('section-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('tab-active'); if(t==='analytics') renderAnalytics(); if(t==='dashboard') renderDashboard(); }
+        function switchTab(t){ ['dashboard','orders','analytics'].forEach(s=>{ document.getElementById('section-'+s).classList.add('hidden'); document.getElementById('tab-'+s).classList.remove('tab-active'); }); document.getElementById('section-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('tab-active'); if(t==='analytics') renderAnalytics(); if(t==='dashboard') { renderDashboard(); checkDeadlines(); } }
         function updateStats(){ const rev=orders.reduce((s,o)=>s+(o.salePrice||0),0); const pro=orders.reduce((s,o)=>s+(o.profit||0),0); const pen=orders.filter(o=>o.status==='Pending'||o.status==='Processing').length; document.getElementById('stat-revenue').innerText=`₹${rev.toLocaleString()}`; document.getElementById('stat-profit').innerText=`₹${pro.toLocaleString()}`; document.getElementById('stat-pending').innerText=pen; document.getElementById('stat-margin').innerText=rev>0?(pro/rev*100).toFixed(1)+'%':'0%'; }
         function renderDashboard(){ const c=document.getElementById('quick-orders'); c.innerHTML=''; orders.slice(0,6).forEach(o=>{ c.innerHTML+=`<div onclick="switchTab('orders')" class="p-4 border rounded-xl flex justify-between items-center bg-white hover:border-violet-200 cursor-pointer transition"><div><p class="font-bold text-slate-800 text-sm">${safe(o.customer)}</p><p class="text-xs text-slate-500">${safe(o.item)}</p></div><span class="text-[10px] font-bold px-2 py-1 rounded ${getStatusClass(o.status)}">${safe(o.status)}</span></div>`}); }
         function renderAnalytics() {
@@ -577,6 +680,11 @@
             doc.text(`Delivery Chg:`, 150, finalY+10); doc.text(`+ Rs. ${o.costs?.delivery||0}`, 190, finalY+10, {align:'right'});
             doc.setFont(undefined, 'bold');
             doc.text(`Balance Due:`, 150, finalY+17); doc.text(`Rs. ${(o.salePrice - (o.advance||0) + (o.costs?.delivery||0))}`, 190, finalY+17, {align:'right'});
+            
+            // Terms
+            doc.setFont(undefined, 'normal'); doc.setFontSize(8); doc.setTextColor(150);
+            doc.text("Terms: No refunds on custom orders. Alterations within 7 days.", 14, 280);
+
             doc.save(`Invoice_${o.customer}_${o.orderId}.pdf`); 
         }
 
