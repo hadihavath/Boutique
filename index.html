@@ -56,7 +56,9 @@
             </div>
             <div class="flex flex-wrap justify-center gap-3">
                 <button onclick="logout()" class="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 transition text-sm font-medium">Sign Out</button>
-                <button onclick="exportData()" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-sm font-medium">Export CSV</button>
+                <button onclick="exportCSV()" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-sm font-medium flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> Export Spreadsheet
+                </button>
                 <button onclick="openOrderModal()" class="px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700 shadow-md shadow-violet-200 transition font-medium flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> New Order
                 </button>
@@ -485,6 +487,27 @@
             doc.save(`Invoice_${o.customer}_${o.id}.pdf`); 
         }
         
+        function exportCSV() {
+            if (!orders.length) return alert("No data.");
+            const headers = ["Order ID", "Date", "Customer", "Phone", "Item", "Status", "Sale Price", "Advance", "Balance", "Profit", "Length", "Chest", "Waist", "Shoulder", "Sleeve", "Neck", "Hip"];
+            const rows = orders.map(o => {
+                const m = o.measurements || {};
+                const bal = (o.salePrice || 0) - (o.advance || 0);
+                const esc = (t) => `"${String(t || '').replace(/"/g, '""')}"`;
+                return [
+                    o.id, o.date, esc(o.customer), esc(o.phone), esc(o.item), esc(o.status),
+                    o.salePrice, o.advance, bal, o.profit,
+                    esc(m.len), esc(m.bust), esc(m.waist), esc(m.shoulder), esc(m.sleeve), esc(m.neck), esc(m.hip)
+                ].join(",");
+            });
+            const csv = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+            a.download = `Boutique_Orders_${new Date().toLocaleDateString()}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+        
+        // Retaining old JSON export as option
         function exportData(){ const s="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(orders)); const a=document.createElement('a'); a.href=s; a.download="backup.json"; a.click(); }
     </script>
 </body>
