@@ -168,7 +168,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="md:col-span-1">
                         <label class="block text-sm font-semibold text-slate-700 mb-1">Customer Name *</label>
-                        <input type="text" id="custName" class="w-full border rounded-xl p-3 focus:ring-2 focus:ring-violet-500 outline-none transition bg-slate-50">
+                        <input type="text" id="custName" class="w-full border rounded-xl p-3 focus:ring-2 focus:ring-violet-500 outline-none transition bg-slate-50" placeholder="Required">
                     </div>
                     <div class="md:col-span-1">
                         <label class="block text-sm font-semibold text-slate-700 mb-1">WhatsApp Number</label>
@@ -213,14 +213,14 @@
                         <div><label class="text-xs font-bold text-slate-500">Fabric Cost</label><input type="number" id="costFabric" value="0" class="w-full border rounded-lg p-2 mt-1"></div>
                         <div><label class="text-xs font-bold text-slate-500">Dyeing Cost</label><input type="number" id="costDye" value="0" class="w-full border rounded-lg p-2 mt-1"></div>
                         <div><label class="text-xs font-bold text-slate-500">Labor/Tailor</label><input type="number" id="costLabor" value="0" class="w-full border rounded-lg p-2 mt-1"></div>
-                        <div><label class="text-xs font-bold text-violet-700 uppercase">Sale Price *</label><input type="number" id="salePrice" class="w-full border-2 border-violet-300 rounded-lg p-2 mt-1 font-bold"></div>
+                        <div><label class="text-xs font-bold text-violet-700 uppercase">Sale Price *</label><input type="number" id="salePrice" class="w-full border-2 border-violet-300 rounded-lg p-2 mt-1 font-bold" placeholder="0"></div>
                         <div class="md:col-span-4"><label class="text-xs font-bold text-emerald-700 uppercase">Advance Paid</label><input type="number" id="advance" value="0" class="w-full border-2 border-emerald-300 rounded-lg p-2 mt-1 font-bold text-emerald-700"></div>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3">
-                    <button type="button" onclick="closeOrderModal()" class="px-8 py-3 rounded-xl text-slate-600 hover:bg-slate-100 font-medium transition">Discard</button>
-                    <button type="button" onclick="handleSave()" class="px-8 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 shadow-lg shadow-violet-200 font-bold transition">Save Order Record</button>
+                    <button onclick="closeOrderModal()" class="px-8 py-3 rounded-xl text-slate-600 hover:bg-slate-100 font-medium transition">Discard</button>
+                    <button id="saveBtn" onclick="handleSave()" class="px-8 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 shadow-lg shadow-violet-200 font-bold transition">Save Order Record</button>
                 </div>
             </div>
         </div>
@@ -274,7 +274,6 @@
                 app.classList.remove('opacity-0', 'pointer-events-none');
                 document.getElementById('user-display').innerText = user.displayName;
                 
-                // Fetch Data from Firebase
                 db.ref('users/' + user.uid + '/orders').on('value', snap => {
                     const data = snap.val();
                     orders = data ? Object.values(data) : [];
@@ -311,6 +310,7 @@
             document.getElementById('advance').value = 0;
             document.getElementById('editId').value = editId || '';
             document.getElementById('modalTitle').innerText = editId ? 'Edit Order Record' : 'Create New Order';
+            document.getElementById('saveBtn').innerText = "Save Order Record";
             
             if(editId) {
                 const o = orders.find(x => x.id == editId);
@@ -348,7 +348,6 @@
         function handleSave() {
             if(!currentUser) return alert("Please login first.");
             
-            // Validation
             const cust = document.getElementById('custName').value;
             const item = document.getElementById('itemType').value;
             const price = document.getElementById('salePrice').value;
@@ -358,7 +357,10 @@
                 return;
             }
 
-            // Data Gathering
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "Saving...";
+            
+            // Gather Data
             const fabric = parseFloat(document.getElementById('costFabric').value) || 0;
             const dye = parseFloat(document.getElementById('costDye').value) || 0;
             const labor = parseFloat(document.getElementById('costLabor').value) || 0;
@@ -393,10 +395,15 @@
                 profit: profit
             };
 
-            // Firebase Save
+            // Save to Firebase
             db.ref('users/' + currentUser.uid + '/orders/' + id).set(orderData)
-                .then(() => closeOrderModal())
-                .catch(err => alert("Error: " + err.message));
+                .then(() => {
+                    closeOrderModal();
+                })
+                .catch(err => {
+                    alert("Error: " + err.message);
+                    btn.innerText = "Save Order Record";
+                });
         }
 
         function deleteOrder(id) {
@@ -493,51 +500,6 @@
                 `;
                 container.appendChild(div);
             });
-        }
-
-        function renderAnalytics() {
-            const totals = orders.reduce((acc, o) => {
-                acc.fabric += (o.costs?.fabric || 0);
-                acc.dye += (o.costs?.dye || 0);
-                acc.labor += (o.costs?.labor || 0);
-                acc.profit += (o.profit || 0);
-                return acc;
-            }, { fabric: 0, dye: 0, labor: 0, profit: 0 });
-
-            const totalMoney = totals.fabric + totals.dye + totals.labor + totals.profit;
-            const getPercent = (val) => totalMoney > 0 ? (val / totalMoney * 100).toFixed(1) : 0;
-
-            const container = document.getElementById('analytics-costs');
-            container.innerHTML = `
-                ${renderProgressBar('Fabric Costs', totals.fabric, 'bg-blue-400', getPercent(totals.fabric))}
-                ${renderProgressBar('Dyeing Costs', totals.dye, 'bg-amber-400', getPercent(totals.dye))}
-                ${renderProgressBar('Labor/Stitching', totals.labor, 'bg-slate-400', getPercent(totals.labor))}
-                ${renderProgressBar('Net Profit', totals.profit, 'bg-emerald-400', getPercent(totals.profit))}
-            `;
-
-            document.getElementById('stat-avg-profit').innerText = orders.length > 0 ? `₹${Math.round(totals.profit / orders.length)}` : '₹0';
-            
-            const itemMap = {};
-            orders.forEach(o => itemMap[o.item] = (itemMap[o.item] || 0) + o.profit);
-            const topItem = Object.entries(itemMap).sort((a,b) => b[1]-a[1])[0];
-            document.getElementById('stat-top-item').innerText = topItem ? topItem[0] : '-';
-            
-            const completed = orders.filter(o => o.status === 'Completed' || o.status === 'Delivered').length;
-            document.getElementById('stat-conversion').innerText = orders.length > 0 ? `${Math.round(completed / orders.length * 100)}%` : '0%';
-        }
-
-        function renderProgressBar(label, value, colorClass, percent) {
-            return `
-                <div class="space-y-1">
-                    <div class="flex justify-between text-xs font-bold">
-                        <span class="text-slate-500 uppercase tracking-wide">${label}</span>
-                        <span class="text-slate-800">₹${value.toLocaleString()} (${percent}%)</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-2">
-                        <div class="${colorClass} h-2 rounded-full" style="width: ${percent}%"></div>
-                    </div>
-                </div>
-            `;
         }
 
         function getStatusClass(status) {
