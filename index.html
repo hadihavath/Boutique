@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boutique Book Pro - Premium</title>
+    <title>Boutique Book Pro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -89,140 +89,17 @@
         }
 
         .login-overlay { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); }
-        .payment-overlay { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(15px); }
-        
         .fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
         .modal-scroll::-webkit-scrollbar { width: 6px; }
         .modal-scroll::-webkit-scrollbar-track { background: transparent; }
         .modal-scroll::-webkit-scrollbar-thumb { background: #e9d5ff; border-radius: 10px; }
         .modal-scroll::-webkit-scrollbar-thumb:hover { background: #d8b4fe; }
-
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top: 3px solid #ffffff;
-            width: 20px;
-            height: 20px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
     </style>
 </head>
 <body class="p-4 md:p-8 relative min-h-screen text-slate-800">
 
     <div class="floral-bg"></div>
-
-    <div id="payment-screen" class="fixed inset-0 z-[200] payment-overlay flex flex-col items-center justify-center p-4">
-        <div class="glass-card bg-white p-0 rounded-3xl shadow-2xl max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden transform transition-all duration-500 scale-100" id="payment-card">
-            
-            <div class="bg-gradient-to-br from-fuchsia-900 to-purple-900 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                <div class="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 bg-fuchsia-500/20 rounded-full blur-3xl"></div>
-                
-                <div>
-                    <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300 mb-2">Premium Access</h2>
-                    <h1 class="text-4xl font-bold heading-font mb-4">Boutique Book Pro</h1>
-                    <p class="text-fuchsia-100/80 leading-relaxed">Unlock the ultimate management tool for your fashion business. Handle orders, calculate fabric costs, and generate invoices effortlessly.</p>
-                </div>
-
-                <div class="space-y-4 mt-8">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-green-400">✓</div>
-                        <span class="font-medium">Unlimited Order Storage</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-green-400">✓</div>
-                        <span class="font-medium">WhatsApp Invoice Integration</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-green-400">✓</div>
-                        <span class="font-medium">Advanced Financial Analytics</span>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-6 border-t border-white/10">
-                    <p class="text-xs text-fuchsia-200">One-time payment. Lifetime access.</p>
-                    <div class="flex items-end gap-2 mt-1">
-                        <span class="text-4xl font-bold">₹699</span>
-                        <span class="text-lg text-fuchsia-300 line-through decoration-fuchsia-500 mb-1">₹1499</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white p-8 md:p-12">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-slate-800">Secure Payment</h3>
-                    <div class="flex gap-2">
-                        <span class="w-8 h-5 bg-slate-200 rounded"></span>
-                        <span class="w-8 h-5 bg-slate-200 rounded"></span>
-                        <span class="w-8 h-5 bg-slate-200 rounded"></span>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Card Number</label>
-                        <div class="relative">
-                            <input type="text" placeholder="0000 0000 0000 0000" class="w-full rounded-xl p-3 bg-slate-50 border border-slate-200 pl-10 font-mono text-slate-700 focus:bg-white transition-colors" maxlength="19">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Expiry Date</label>
-                            <input type="text" placeholder="MM / YY" class="w-full rounded-xl p-3 bg-slate-50 border border-slate-200 font-mono text-slate-700 text-center" maxlength="5">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">CVV / CVC</label>
-                            <input type="password" placeholder="•••" class="w-full rounded-xl p-3 bg-slate-50 border border-slate-200 font-mono text-slate-700 text-center" maxlength="3">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Name on Card</label>
-                        <input type="text" placeholder="JOHN DOE" class="w-full rounded-xl p-3 bg-slate-50 border border-slate-200 font-medium text-slate-700">
-                    </div>
-
-                    <div class="py-2">
-                        <div class="flex items-center">
-                            <input id="terms" type="checkbox" checked class="w-4 h-4 text-fuchsia-600 rounded border-gray-300 focus:ring-fuchsia-500 cursor-pointer">
-                            <label for="terms" class="ml-2 block text-xs text-slate-500">I agree to the Terms of Service and Privacy Policy.</label>
-                        </div>
-                    </div>
-
-                    <button id="pay-button" onclick="processPayment()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2">
-                        <span id="pay-text">Pay ₹699 Now</span>
-                        <div id="pay-loader" class="spinner hidden"></div>
-                    </button>
-                    
-                    <p class="text-center text-[10px] text-slate-400 mt-4 flex items-center justify-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg>
-                        256-bit SSL Encrypted Payment
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div id="payment-success" class="hidden flex flex-col items-center justify-center text-center text-white scale-90 transition-transform">
-            <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center shadow-lg mb-4 animate-bounce">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
-            </div>
-            <h2 class="text-3xl font-bold mb-2">Payment Successful!</h2>
-            <p class="text-slate-300">Welcome to Boutique Book Pro.</p>
-            <p class="text-sm text-slate-400 mt-2">Redirecting to login...</p>
-        </div>
-    </div>
 
     <div id="login-screen" class="fixed inset-0 z-[100] login-overlay flex flex-col items-center justify-center p-4">
         <div class="bg-white/80 p-10 rounded-3xl shadow-2xl border border-white max-w-md w-full text-center backdrop-blur-xl">
@@ -512,40 +389,6 @@
     </div>
 
     <script>
-        // DUMMY PAYMENT LOGIC
-        function processPayment() {
-            const btn = document.getElementById('pay-button');
-            const text = document.getElementById('pay-text');
-            const loader = document.getElementById('pay-loader');
-            const cardSection = document.getElementById('payment-card');
-            const successSection = document.getElementById('payment-success');
-            const paymentScreen = document.getElementById('payment-screen');
-
-            // 1. Loading State
-            text.innerText = "Processing...";
-            loader.classList.remove('hidden');
-            btn.disabled = true;
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
-
-            // 2. Simulate Network Delay (2 seconds)
-            setTimeout(() => {
-                // 3. Hide Card, Show Success
-                cardSection.classList.add('hidden');
-                successSection.classList.remove('hidden');
-                successSection.classList.add('scale-100'); // Pop animation
-
-                // 4. Wait 1.5 seconds, then hide overlay and show login
-                setTimeout(() => {
-                    paymentScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        paymentScreen.classList.add('hidden');
-                        // Login screen is now revealed underneath
-                    }, 500);
-                }, 1500);
-
-            }, 2000);
-        }
-
         document.addEventListener('mousemove', (e) => {
             const x = e.clientX / window.innerWidth;
             const y = e.clientY / window.innerHeight;
@@ -586,7 +429,6 @@
                     renderOrders(); renderDashboard(); updateStats(); checkDeadlines();
                 });
             } else {
-                // If payment was not processed yet, the login screen is hidden by payment screen naturally via Z-index
                 document.getElementById('login-screen').classList.remove('hidden');
             }
         });
